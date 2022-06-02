@@ -12,7 +12,14 @@ function App() {
   const [error,setError]=useState(null);
   const [user,setUser]=useState('');
   const [modelisopen,setModelisopen]=useState(false)
+  const [selectUser,setSelectuser]=useState({
+    username:'',
+    email:''
+
+  })
+  const [updateFlag,setUpdateFlag]=useState(false)
   const [message,setMessage]=useState('')
+  const [selectedUserId,setId]=useState('')
   const AllUsers=()=>{
     fetch(Url)
     .then((res)=>{
@@ -87,11 +94,15 @@ const niyeAso=(asi)=>{
 
     
   })
+
   .then((res)=>{
     if (res.status===201){
       AllUsers();
+      
       setModelisopen(true)
-      setMessage("User Created Successfully....!!!")
+   
+        setMessage("User Created Successfully....!!!")
+      
     }
     else{
       throw new Error("could not Created !!!!")
@@ -109,9 +120,64 @@ const niyeAso=(asi)=>{
 }
 
 
+const HandelEdit=(id)=>{
+  setId(id)
+  setUpdateFlag(true)
+  const filteruser=user.filter((prev)=>prev.id === id)
+  setSelectuser({
+    username:filteruser[0].username,
+    email:filteruser[0].email,
+  })
+  
+
+}
+
+
+const HandelUpdate=(data)=>{
+  console.log(data)
+ try{
+  fetch(Url + `/${selectedUserId}`,{
+    method:"PUT",
+    headers:{
+      "Content-Type":"application/json"
+
+    },
+    body:JSON.stringify(data)
+
+    
+  })
+
+  .then((res)=>{
+    if (!res.ok){
+      throw new Error("Faild to Update")
+      
+    }
+    AllUsers();
+    setModelisopen(true)
+   
+    setMessage("User Updated Successfully....!!!")
+    setUpdateFlag(false)
+
+
+  })
+ }
+catch(err){
+  setError(err.message)
+
+}
+
+
+    
+    
+
+  
+
+}
+
   return (
   <>
-  <UserForm buttonText={"Add user"} jacchi={niyeAso} />
+  {updateFlag ? (<UserForm buttonText= "Update User" selectUser={selectUser} jacchi={HandelUpdate} />) :  (<UserForm buttonText={"Add user"} jacchi={niyeAso} />)  }
+ 
   <p style={{'textAlign':'center','color':'green'}}><Messageall message={message} /></p>
   <h1>{loading && <b>Loading.....</b> }</h1>
   <h1>{error}</h1>
@@ -123,8 +189,8 @@ const niyeAso=(asi)=>{
         <h1>{username}</h1>
         <h3>{email}</h3>
         <div className='allbtn'>
-        <button className='btn'><i class="fa fa-edit"></i></button>
-        <button className='btn2' onClick={()=>{HandelDelete(id)}}><i class="fa fa-trash"></i></button>
+        <button className='btn' onClick={()=>{HandelEdit(id)}}><i className="fa fa-edit"></i></button>
+        <button className='btn2' onClick={()=>{HandelDelete(id)}}><i className="fa fa-trash"></i></button>
         </div>
        
       </section>
